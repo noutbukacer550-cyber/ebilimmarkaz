@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eBilimMarkaz</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;
+ background:#f1f5f9;color:#172554
+}
+header{
+ background:#123b72;color:white;
+ padding:22px;text-align:center
+}
+header h1{margin:0;font-size:27px}
+header p{margin:8px 0 0;color:#dbeafe}
+main{max-width:950px;margin:35px auto;padding:15px}
+.welcome{
+ background:white;padding:28px;border-radius:16px;
+ box-shadow:0 4px 18px #00000010;text-align:center
+}
+h2{color:#123b72}
+.cards{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+ gap:15px;margin-top:25px
+}
+.card{
+ background:white;padding:22px;border-radius:14px;
+ text-align:center;box-shadow:0 3px 12px #0000000d
+}
+.card .emoji{font-size:30px}
+.card h3{margin-bottom:5px}
+button{
+ background:#1763b1;color:white;border:0;
+ padding:12px 22px;border-radius:9px;
+ font-size:16px;cursor:pointer
+}
+footer{text-align:center;padding:25px;color:#64748b}
+</style>
+</head>
+<body>
+<header>
+<h1>?? eBilimMarkaz</h1>
+<p>Bilim sari ishonchli qadam!</p>
+</header>
+
+<main>
+<section class="welcome">
+<h2>Xush kelibsiz!</h2>
+<p>O倉uv markazingizni yagona platformada boshqaring.</p>
+<button onclick="alert('Tizimga kirish bo鼠imi keyingi bosqichda ulanadi.')">
+Tizimga kirish
+</button>
+</section>
+
+<section class="cards">
+<div class="card">
+<div class="emoji">??</div>
+<h3>Markazlar</h3>
+<p>O倉uv markazlarini boshqarish</p>
+</div>
+<div class="card">
+<div class="emoji">?????</div>
+<h3>O倉ituvchilar</h3>
+<p>O倉ituvchilar kabineti</p>
+</div>
+<div class="card">
+<div class="emoji">?????</div>
+<h3>O倉uvchilar</h3>
+<p>O倉uvchilar ma値umotlari</p>
+</div>
+<div class="card">
+<div class="emoji">??</div>
+<h3>Natijalar</h3>
+<p>Davomat va baholar</p>
+</div>
+</section>
+</main>
+
+<footer>ｩ 2026 eBilimMarkaz</footer>
+</body>
+</html>
