@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eBilimMarkaz</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172554}
+header{background:#123b72;color:white;padding:22px;text-align:center}
+header h1{margin:0;font-size:28px}
+header p{color:#dbeafe;margin-bottom:0}
+main{max-width:1100px;margin:35px auto;padding:15px}
+.welcome,.login,.dashboard{background:white;padding:28px;border-radius:16px;box-shadow:0 4px 18px #00000010;text-align:center}
+h2{color:#123b72}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:25px}
+.card{background:white;padding:22px;border-radius:14px;text-align:center;box-shadow:0 3px 12px #0000000d}
+.emoji{font-size:30px}
+button{background:#1763b1;color:white;border:0;padding:13px 22px;border-radius:9px;font-size:16px;cursor:pointer}
+button:hover{background:#104b8a}
+button:disabled{opacity:.65;cursor:wait}
+.login{display:none;margin-top:25px;max-width:520px;margin-left:auto;margin-right:auto}
+input,select{width:100%;padding:13px;margin:9px 0;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
+.login button{width:100%;margin-top:12px}
+#message{color:#b45309;min-height:22px}
+.small{font-size:13px;color:#64748b;line-height:1.5}
+.dashboard{display:none;margin-top:25px}
+.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:20px}
+.dashboard-item{background:#eff6ff;border-radius:12px;padding:18px;cursor:pointer}
+.dashboard-item:hover{background:#dbeafe}
+footer{text-align:center;padding:25px;color:#64748b}
+.hidden{display:none!important}
+.management{margin-top:22px;background:white;padding:24px;border-radius:16px;box-shadow:0 4px 18px #00000010;text-align:left}
+.management-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.management-header h2{margin:0}
+.table-wrap{overflow-x:auto;margin-top:20px}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:13px;border-bottom:1px solid #e2e8f0;text-align:left}
+th{background:#eff6ff}
+.action-btn{padding:8px 12px;margin:3px;font-size:13px}
+.secondary{background:#64748b}
+.danger{background:#dc2626}
+.form-panel{background:#f8fafc;padding:18px;border-radius:12px;margin-top:20px}
+.form-panel label{display:block;font-weight:bold;margin-top:10px}
+.form-panel button{margin-top:10px}
+.status-active{color:#15803d;font-weight:bold}
+.status-inactive{color:#dc2626;font-weight:bold}
+#centerMessage,#teacherMessage{min-height:22px}
+.checkline{display:flex;align-items:center;gap:10px;margin:12px 0}
+.checkline input{width:auto;margin:0}
+.notice{background:#eff6ff;padding:12px;border-radius:9px;color:#1e40af;font-size:13px;line-height:1.5}
+@media(max-width:600px){header h1{font-size:23px}.welcome,.login,.dashboard,.management{padding:18px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>📘 eBilimMarkaz</h1>
+  <p>Bilim sari ishonchli qadam!</p>
+</header>
+<main>
+  <section class="welcome" id="welcome">
+    <h2>Xush kelibsiz!</h2>
+    <p>O‘quv markazingizni yagona platformada boshqaring.</p>
+    <button type="button" id="openLoginButton">Tizimga kirish</button>
+  </section>
+  <section class="cards" id="publicCards">
+    <div class="card"><div class="emoji">🏫</div><h3>Markazlar</h3><p>O‘quv markazlarini boshqarish</p></div>
+    <div class="card"><div class="emoji">👩‍🏫</div><h3>O‘qituvchilar</h3><p>O‘qituvchilar kabineti</p></div>
+    <div class="card"><div class="emoji">🎓</div><h3>O‘quvchilar</h3><p>O‘quvchilar ma’lumotlari</p></div>
+    <div class="card"><div class="emoji">📊</div><h3>Natijalar</h3><p>Davomat va baholar</p></div>
+  </section>
+  <section class="login" id="login">
+    <h2>Tizimga kirish</h2>
+    <select id="role">
+      <option value="owner_admin">Platforma egasi (Admin)</option>
+      <option value="teacher">O‘qituvchi</option>
+      <option value="student">O‘quvchi</option>
+    </select>
+    <input type="email" id="email" placeholder="Email manzilingiz" autocomplete="username">
+    <input type="password" id="password" placeholder="Parolingiz" autocomplete="current-password">
+    <button type="button" id="loginButton">Kirish</button>
+    <p id="message" aria-live="polite"></p>
+    <p class="small">Hozircha kirish Supabase Auth email va parol orqali ishlaydi.</p>
+  </section>
+  <section class="dashboard" id="dashboard">
+    <h2 id="dashboardTitle">Kabinet</h2>
+    <p id="dashboardWelcome"></p>
+    <div class="dashboard-grid" id="dashboardGrid"></div>
+
+    <section id="centersPanel" class="management hidden">
+      <div class="management-header"><h2>🏫 O‘quv markazlari</h2><button type="button" id="addCenterButton">+ Yangi markaz</button></div>
+      <div id="centerForm" class="form-panel hidden">
+        <h3 id="centerFormTitle">Yangi markaz</h3>
+        <label for="centerName">Markaz nomi</label><input id="centerName" placeholder="Markaz nomi">
+        <label for="centerPhone">Telefon raqami</label><input id="centerPhone" placeholder="+998">
+        <label for="centerAddress">Manzil</label><input id="centerAddress" placeholder="Markaz manzili">
+        <label for="centerTeacher">O‘qituvchi (eski markaz maydoni)</label>
+        <select id="centerTeacher"><option value="">O‘qituvchini tanlang</option></select>
+        <p class="small">Eslatma: o‘qituvchining asosiy markaz biriktiruvi endi profiles.center_id maydonida saqlanadi.</p>
+        <button type="button" id="saveCenterButton">Saqlash</button>
+        <button type="button" id="cancelCenterButton" class="secondary">Bekor qilish</button>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Markaz nomi</th><th>Telefon</th><th>Manzil</th><th>Holati</th><th>Amallar</th></tr></thead>
+      <tbody id="centersTable"><tr><td colspan="5">Ma’lumotlar yuklanmoqda...</td></tr></tbody></table></div>
+      <p id="centerMessage" aria-live="polite"></p>
+    </section>
+
+    <section id="teachersPanel" class="management hidden">
+      <div class="management-header"><h2>👩‍🏫 O‘qituvchilar boshqaruvi</h2><button type="button" id="addTeacherButton">+ O‘qituvchi qo‘shish</button></div>
+      <div id="teacherForm" class="form-panel hidden">
+        <h3>Yangi o‘qituvchi</h3>
+        <div class="notice">Login va parolni platforma egasi belgilaydi. Parol kamida 8 ta belgidan iborat bo‘lsin. O‘qituvchi hisobini yaratish server funksiyasi orqali bajariladi.</div>
+        <label for="teacherName">O‘qituvchining F.I.Sh.</label><input id="teacherName" placeholder="Masalan: Ali Valiyev">
+        <label for="teacherUsername">Login</label><input id="teacherUsername" placeholder="Masalan: ali_teacher" autocomplete="off">
+        <label for="teacherPassword">Vaqtinchalik parol</label><input id="teacherPassword" type="password" placeholder="Kamida 8 ta belgi" autocomplete="new-password">
+        <label for="teacherCenter">O‘quv markazi</label><select id="teacherCenter"><option value="">Markazsiz / keyin biriktirish</option></select>
+        <div class="checkline"><input type="checkbox" id="teacherFree"><label for="teacherFree">Bepul foydalanish</label></div>
+        <label for="teacherPrice">Oylik foydalanish narxi</label><input id="teacherPrice" type="number" min="0" step="1000" value="0">
+        <label for="teacherStartDate">Foydalanish boshlanish sanasi</label><input id="teacherStartDate" type="date">
+        <button type="button" id="saveTeacherButton">O‘qituvchini yaratish</button>
+        <button type="button" id="cancelTeacherButton" class="secondary">Bekor qilish</button>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>F.I.Sh.</th><th>Login</th><th>Markaz ID</th><th>Tarif</th><th>Oylik narx</th><th>Holati</th></tr></thead>
+      <tbody id="teachersTable"><tr><td colspan="6">Ma’lumotlar yuklanmoqda...</td></tr></tbody></table></div>
+      <p id="teacherMessage" aria-live="polite"></p>
+      <p class="small">Xavfsizlik sababli parollar jadvalda ko‘rsatilmaydi. Hozirgi bosqichda yaratish va ro‘yxatni ko‘rish ishlaydi; tahrirlash, bloklash va parolni almashtirish keyingi server funksiyasi bilan qo‘shiladi.</p>
+    </section>
+    <button type="button" id="logoutButton" style="margin-top:22px">Tizimdan chiqish</button>
+  </section>
+</main>
+<footer>© 2026 eBilimMarkaz</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+
+// Supabase Dashboard -> Project Settings -> API bo‘limidagi URL va Publishable key.
+const SUPABASE_URL = "https://rvkdlzjzwevzsusfsvjh.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_VO12wWzoZKEliqoOPvd-3w_uZ7c99v4";
+
+let supabaseClient = null;
+const configReady = SUPABASE_URL.startsWith("https://") &&
+  SUPABASE_PUBLISHABLE_KEY.length > 20 &&
+  !SUPABASE_URL.includes("YASHIRIN") &&
+  !SUPABASE_PUBLISHABLE_KEY.includes("YASHIRIN");
+
+if (configReady && window.supabase?.createClient) {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+}
+const byId = id => document.getElementById(id);
+
+function showLogin(){byId("login").style.display="block";byId("message").textContent="";byId("login").scrollIntoView({behavior:"smooth",block:"center"});}
+function setMessage(message,isError=true){byId("message").textContent=message;byId("message").style.color=isError?"#b45309":"#15803d";}
+function centerMessage(message,error=false){byId("centerMessage").textContent=message;byId("centerMessage").style.color=error?"#dc2626":"#15803d";}
+function teacherMessage(message,error=false){byId("teacherMessage").textContent=message;byId("teacherMessage").style.color=error?"#dc2626":"#15803d";}
+
+async function login(){
+  const email=byId("email").value.trim(),password=byId("password").value,selectedRole=byId("role").value,button=byId("loginButton");
+  if(!supabaseClient){setMessage("Supabase URL va Publishable Key qiymatlarini tekshiring.");return;}
+  if(!email||!password){setMessage("Email va parolni kiriting.");return;}
+  button.disabled=true;button.textContent="Tekshirilmoqda...";setMessage("");
+  try{
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    const actualRole=data.user?.app_metadata?.role||null;
+    if(actualRole!==selectedRole){await supabaseClient.auth.signOut();throw new Error("Bu hisob tanlangan rolga biriktirilmagan.");}
+    showDashboard(data.user,actualRole);
+  }catch(error){setMessage(error.message||"Kirishda xatolik yuz berdi.");}
+  finally{button.disabled=false;button.textContent="Kirish";}
+}
+
+function showDashboard(user,role){
+  byId("welcome").classList.add("hidden");byId("publicCards").classList.add("hidden");byId("login").style.display="none";byId("dashboard").style.display="block";
+  const titles={owner_admin:"Platforma egasi — Admin kabineti",teacher:"O‘qituvchi kabineti",student:"O‘quvchi kabineti"};
+  byId("dashboardTitle").textContent=titles[role]||"Kabinet";
+  byId("dashboardWelcome").textContent="Tizimga muvaffaqiyatli kirdingiz: "+(user.email||"");
+  const items=role==="owner_admin"?["O‘quv markazlari","O‘qituvchilar","Tariflar","Hisobotlar","Sozlamalar"]:role==="teacher"?["Guruhlarim","O‘quvchilar","Davomat","Baholar"]:["Mening natijalarim","Davomatim","Dars jadvalim"];
+  const grid=byId("dashboardGrid");grid.replaceChildren();
+  items.forEach(item=>{const div=document.createElement("div");div.className="dashboard-item";div.textContent=item;grid.appendChild(div);});
+  byId("centersPanel").classList.add("hidden");byId("teachersPanel").classList.add("hidden");
+}
+async function logout(){
+  if(supabaseClient)await supabaseClient.auth.signOut();
+  byId("dashboard").style.display="none";byId("welcome").classList.remove("hidden");byId("publicCards").classList.remove("hidden");
+  byId("email").value="";byId("password").value="";byId("login").style.display="none";
+  byId("centersPanel").classList.add("hidden");byId("teachersPanel").classList.add("hidden");byId("centerForm").classList.add("hidden");byId("teacherForm").classList.add("hidden");
+  currentAdminUser=null;
+}
+async function checkExistingSession(){
+  if(!supabaseClient)return;
+  try{const {data,error}=await supabaseClient.auth.getSession();if(error)return;const user=data.session?.user;if(!user)return;
+    const role=user.app_metadata?.role;if(["owner_admin","teacher","student"].includes(role))showDashboard(user,role);else await supabaseClient.auth.signOut();
+  }catch(error){console.error("Sessiyani tekshirishda xatolik:",error);}
+}
+
+let editingCenterId=null,currentAdminUser=null;
+async function requireOwner(){
+  const {data,error}=await supabaseClient.auth.getUser();
+  if(error||!data.user)throw new Error("Admin sessiyasi topilmadi. Qayta tizimga kiring.");
+  if(data.user.app_metadata?.role!=="owner_admin")throw new Error("Bu amal faqat platforma egasi uchun.");
+  currentAdminUser=data.user;return data.user;
+}
+
+byId("dashboardGrid").addEventListener("click",async event=>{
+  const item=event.target.closest(".dashboard-item");if(!item)return;
+  if(item.textContent.trim()==="O‘quv markazlari"){
+    if(!supabaseClient){centerMessage("Supabase bilan ulanish sozlanmagan.",true);return;}
+    try{await requireOwner();byId("centersPanel").classList.remove("hidden");byId("teachersPanel").classList.add("hidden");await loadTeachersForCenter();await loadCenters();byId("centersPanel").scrollIntoView({behavior:"smooth",block:"start"});}
+    catch(error){centerMessage(error.message,true);}
+  }else if(item.textContent.trim()==="O‘qituvchilar"){
+    if(!supabaseClient){teacherMessage("Supabase bilan ulanish sozlanmagan.",true);return;}
+    try{await requireOwner();byId("teachersPanel").classList.remove("hidden");byId("centersPanel").classList.add("hidden");await loadCentersForTeacher();await loadTeachersList();byId("teachersPanel").scrollIntoView({behavior:"smooth",block:"start"});}
+    catch(error){teacherMessage(error.message,true);}
+  }
+});
+
+// MARKAZLAR
+async function loadTeachersForCenter(){
+  const select=byId("centerTeacher");select.replaceChildren(new Option("O‘qituvchini tanlang",""));
+  const {data,error}=await supabaseClient.from("profiles").select("id,full_name").eq("role","teacher").order("full_name");
+  if(error){centerMessage("O‘qituvchilarni yuklashda xato: "+error.message,true);return;}
+  (data||[]).forEach(t=>select.add(new Option(t.full_name||"Ismsiz o‘qituvchi",t.id)));
+}
+async function loadCenters(){
+  const table=byId("centersTable");table.replaceChildren();
+  const {data,error}=await supabaseClient.from("centers").select("id,name,phone,address,is_active,teacher_id").order("created_at",{ascending:false});
+  if(error){centerMessage("Markazlarni yuklashda xato: "+error.message,true);return;}
+  if(!data?.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.textContent="Hozircha markazlar mavjud emas.";tr.append(td);table.append(tr);centerMessage("");return;}
+  data.forEach(c=>{
+    const tr=document.createElement("tr");const vals=[c.name||"",c.phone||"—",c.address||"—"];
+    vals.forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.append(td);});
+    const st=document.createElement("td");st.textContent=c.is_active?"Faol":"Nofaol";st.className=c.is_active?"status-active":"status-inactive";tr.append(st);
+    const actions=document.createElement("td"),edit=document.createElement("button"),toggle=document.createElement("button");
+    edit.textContent="Tahrirlash";edit.className="action-btn";edit.addEventListener("click",()=>editCenter(c));
+    toggle.textContent=c.is_active?"Nofaol qilish":"Faollashtirish";toggle.className="action-btn secondary";toggle.addEventListener("click",()=>toggleCenter(c));
+    actions.append(edit,toggle);tr.append(actions);table.append(tr);
+  });centerMessage("Markazlar muvaffaqiyatli yuklandi.");
+}
+byId("addCenterButton").addEventListener("click",()=>{
+  editingCenterId=null;byId("centerFormTitle").textContent="Yangi markaz qo‘shish";byId("centerName").value="";byId("centerPhone").value="";byId("centerAddress").value="";byId("centerTeacher").value="";byId("centerForm").classList.remove("hidden");
+});
+function editCenter(c){
+  editingCenterId=c.id;byId("centerFormTitle").textContent="Markazni tahrirlash";byId("centerName").value=c.name||"";byId("centerPhone").value=c.phone||"";byId("centerAddress").value=c.address||"";byId("centerTeacher").value=c.teacher_id||"";byId("centerForm").classList.remove("hidden");
+}
+byId("saveCenterButton").addEventListener("click",async()=>{
+  const name=byId("centerName").value.trim(),phone=byId("centerPhone").value.trim(),address=byId("centerAddress").value.trim(),teacherId=byId("centerTeacher").value||null,button=byId("saveCenterButton");
+  if(!name){centerMessage("Markaz nomini kiriting.",true);return;}
+  button.disabled=true;button.textContent="Saqlanmoqda...";
+  try{
+    await requireOwner();const payload={name,phone:phone||null,address:address||null,teacher_id:teacherId};let result;
+    if(editingCenterId)result=await supabaseClient.from("centers").update(payload).eq("id",editingCenterId);
+    else{payload.created_by=currentAdminUser.id;result=await supabaseClient.from("centers").insert(payload);}
+    if(result.error)throw result.error;byId("centerForm").classList.add("hidden");editingCenterId=null;await loadCenters();centerMessage("Markaz muvaffaqiyatli saqlandi!");
+  }catch(error){centerMessage("Xatolik: "+error.message,true);}
+  finally{button.disabled=false;button.textContent="Saqlash";}
+});
+async function toggleCenter(c){
+  const next=!c.is_active;if(!confirm(c.name+" markazini "+(next?"faollashtirishni":"nofaol qilishni")+" xohlaysizmi?"))return;
+  const {error}=await supabaseClient.from("centers").update({is_active:next}).eq("id",c.id);
+  if(error){centerMessage("Xatolik: "+error.message,true);return;}await loadCenters();centerMessage("Markaz holati yangilandi.");
+}
+byId("cancelCenterButton").addEventListener("click",()=>{byId("centerForm").classList.add("hidden");editingCenterId=null;centerMessage("");});
+
+// O‘QITUVCHILAR
+async function loadCentersForTeacher(){
+  const select=byId("teacherCenter");select.replaceChildren(new Option("Markazsiz / keyin biriktirish",""));
+  const {data,error}=await supabaseClient.from("centers").select("id,name").eq("is_active",true).order("name");
+  if(error){teacherMessage("Markazlar ro‘yxatini yuklashda xato: "+error.message,true);return;}
+  (data||[]).forEach(c=>select.add(new Option(c.name,c.id)));
+}
+async function loadTeachersList(){
+  const table=byId("teachersTable");table.replaceChildren();
+  const {data,error}=await supabaseClient.from("profiles")
+    .select("id,full_name,username,center_id,is_active,is_free,monthly_price,usage_start_date")
+    .eq("role","teacher").order("created_at",{ascending:false});
+  if(error){teacherMessage("O‘qituvchilarni yuklashda xato: "+error.message,true);return;}
+  if(!data?.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.textContent="Hozircha o‘qituvchilar mavjud emas.";tr.append(td);table.append(tr);teacherMessage("");return;}
+  const centerIds=[...new Set(data.map(t=>t.center_id).filter(Boolean))];let centerMap={};
+  if(centerIds.length){const {data:centers,error:ce}=await supabaseClient.from("centers").select("id,name").in("id",centerIds);if(!ce)(centers||[]).forEach(c=>centerMap[c.id]=c.name);}
+  data.forEach(t=>{
+    const tr=document.createElement("tr");
+    const values=[t.full_name||"—",t.username||"—",t.center_id?(centerMap[t.center_id]||"Biriktirilgan"): "Markazsiz",t.is_free?"Bepul":"Pullik",t.is_free?"0":String(t.monthly_price??0)];
+    values.forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.append(td);});
+    const status=document.createElement("td");status.textContent=t.is_active===false?"Bloklangan":"Faol";status.className=t.is_active===false?"status-inactive":"status-active";tr.append(status);table.append(tr);
+  });
+  teacherMessage("O‘qituvchilar ro‘yxati yuklandi: "+data.length+" ta.");
+}
+byId("addTeacherButton").addEventListener("click",()=>{
+  byId("teacherName").value="";byId("teacherUsername").value="";byId("teacherPassword").value="";byId("teacherCenter").value="";
+  byId("teacherFree").checked=false;byId("teacherPrice").value="0";byId("teacherStartDate").value=new Date().toISOString().slice(0,10);
+  byId("teacherForm").classList.remove("hidden");teacherMessage("");
+});
+byId("cancelTeacherButton").addEventListener("click",()=>byId("teacherForm").classList.add("hidden"));
+byId("teacherFree").addEventListener("change",()=>{if(byId("teacherFree").checked)byId("teacherPrice").value="0";});
+byId("saveTeacherButton").addEventListener("click",async()=>{
+  const full_name=byId("teacherName").value.trim(),username=byId("teacherUsername").value.trim(),password=byId("teacherPassword").value,
+    center_id=byId("teacherCenter").value||null,is_free=byId("teacherFree").checked,
+    monthly_price=is_free?0:Number(byId("teacherPrice").value||0),usage_start_date=byId("teacherStartDate").value||null,button=byId("saveTeacherButton");
+  if(!full_name||!username||!password){teacherMessage("F.I.Sh., login va parolni to‘ldiring.",true);return;}
+  if(password.length<8){teacherMessage("Parol kamida 8 ta belgidan iborat bo‘lsin.",true);return;}
+  if(!/^[a-zA-Z0-9_.-]{3,40}$/.test(username)){teacherMessage("Login 3–40 belgi bo‘lsin; lotin harflari, raqam, nuqta, _ yoki - ishlating.",true);return;}
+  if(!Number.isFinite(monthly_price)||monthly_price<0){teacherMessage("Oylik narx noto‘g‘ri.",true);return;}
+  button.disabled=true;button.textContent="Yaratilmoqda...";teacherMessage("");
+  try{
+    await requireOwner();
+    const {data,error}=await supabaseClient.functions.invoke("create-teacher",{
+      body:{full_name,username,password,center_id,is_free,monthly_price,usage_start_date}
+    });
+    if(error){
+      let detail=error.message||"Server funksiyasida xatolik.";
+      try{const ctx=error.context;if(ctx?.json){const j=await ctx.json();detail=j.error||j.message||detail;}}catch(_){}
+      throw new Error(detail);
+    }
+    if(data?.error)throw new Error(data.error);
+    byId("teacherForm").classList.add("hidden");
+    byId("teacherPassword").value="";
+    await loadTeachersList();
+    teacherMessage("O‘qituvchi muvaffaqiyatli yaratildi: "+username);
+  }catch(error){teacherMessage("Xatolik: "+(error.message||"O‘qituvchi yaratilmadi."),true);}
+  finally{button.disabled=false;button.textContent="O‘qituvchini yaratish";}
+});
+
+byId("openLoginButton").addEventListener("click",showLogin);
+byId("loginButton").addEventListener("click",login);
+byId("logoutButton").addEventListener("click",logout);
+checkExistingSession();
+</script>
+</body>
+</html>
